@@ -5,7 +5,7 @@ This repository contains the frontend application for a Live Chat Messaging Syst
 
 ## Deployed Application (Vercel)
 
-https://react-groups-chat-live-oi3j23z93-shubhrendu-tripathis-projects.vercel.app/
+https://react-groups-chat-live.vercel.app/
 
 ## Technologies
 
