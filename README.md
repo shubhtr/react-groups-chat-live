@@ -3,8 +3,9 @@
 
 This repository contains the frontend application for a Live Chat Messaging System for Groups where users can communicate in groups similar to WhatsApp. 
 
-## Deployed Application
+## Deployed Application (Vercel)
 
+https://react-groups-chat-live-oi3j23z93-shubhrendu-tripathis-projects.vercel.app/
 
 ## Technologies
 
