@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { TextField, Button, Paper, Typography, Container, Box } from "@mui/material";
 
 const POLLING_INTERVAL = 3000;
-const RANDOM_MESSAGE_INTERVAL = 5000;
+const RANDOM_MESSAGE_INTERVAL = 3000;
 
 const randomMessages = [
   "Hey there! 👋",
