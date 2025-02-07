@@ -1,95 +1,150 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useChat } from "../context/ChatContext";
-import { TextField, Button, Paper, Typography, Container, Box, Dialog, DialogTitle, DialogContent, List, ListItem, ListItemText } from "@mui/material";
-import { useParams, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import { TextField, Button, Paper, Typography, Container, Box } from "@mui/material";
+
+const POLLING_INTERVAL = 3000;
+const RANDOM_MESSAGE_INTERVAL = 5000;
+
+const randomMessages = [
+  "Hey there! 👋",
+  "How's everyone doing?",
+  "Any cool projects you're working on?",
+  "I love React! 🚀",
+  "Node.js is amazing!",
+  "Who else is excited about AI?",
+  "Just learned something new today! 😃",
+  "Frontend or Backend, what’s your favorite?"
+];
+
+const getRandomMessage = () => randomMessages[Math.floor(Math.random() * randomMessages.length)];
 
 const ChatRoom = () => {
-  const { messages, sendMessage, groups, setCurrentGroup, currentGroup } = useChat();
-  const { groupId } = useParams();
+  const { groups, currentGroup, setMessagesForGroup } = useChat();
   const navigate = useNavigate();
+  const [groupMessages, setGroupMessages] = useState([]);
   const [newMessage, setNewMessage] = useState("");
-  const [userDialogOpen, setUserDialogOpen] = useState(false);
-  const [typingUsers, setTypingUsers] = useState(new Set());
+  const [username, setUsername] = useState("You");
+  const messagesEndRef = useRef(null);
 
-  // Ensure group is set
-  useEffect(() => {
-    const group = groups.find((g) => g.id === Number(groupId));
-    if (!group) {
-      navigate("/");
-    } else {
-      setCurrentGroup(group);
-    }
-  }, [groupId, groups, setCurrentGroup, navigate]);
-
-  // Simulate random users typing
+  // Load messages when the component mounts or when currentGroup changes
   useEffect(() => {
     if (!currentGroup) return;
 
-    if (newMessage.trim() !== "") {
-      const randomUser = currentGroup.users.find((u) => u.name !== "You");
-      if (randomUser) {
-        setTypingUsers((prev) => new Set(prev).add(randomUser.name));
+    const savedMessages = JSON.parse(localStorage.getItem(`chat_${currentGroup.id}`)) || [];
+    setGroupMessages(savedMessages);
+  }, [currentGroup]);
 
-        const timeout = setTimeout(() => {
-          setTypingUsers((prev) => {
-            const updated = new Set(prev);
-            updated.delete(randomUser.name);
-            return updated;
-          });
-        }, 2000);
-
-        return () => clearTimeout(timeout);
-      }
-    }
-  }, [newMessage, currentGroup]);
-
-  // Handle user typing indicator
+  // Poll for new messages every few seconds
   useEffect(() => {
     if (!currentGroup) return;
 
-    if (newMessage.trim() === "") {
-      setTypingUsers((prev) => {
-        const updated = new Set(prev);
-        updated.delete("You");
-        return updated;
+    const pollingInterval = setInterval(() => {
+      const updatedMessages = JSON.parse(localStorage.getItem(`chat_${currentGroup.id}`)) || [];
+      setGroupMessages(updatedMessages);
+    }, POLLING_INTERVAL);
+
+    return () => clearInterval(pollingInterval);
+  }, [currentGroup]);
+
+  // Simulate random user messages at intervals
+  useEffect(() => {
+    if (!currentGroup) return;
+
+    const sendRandomMessage = () => {
+      const group = groups.find((g) => g.id === currentGroup.id);
+      if (!group || !group.users) return;
+
+      const randomUser = group.users.find((user) => user.name !== "You");
+      if (!randomUser) return;
+
+      const newMsg = {
+        id: Date.now(),
+        text: getRandomMessage(),
+        sender: randomUser.name,
+        timestamp: new Date().toLocaleTimeString()
+      };
+
+      setGroupMessages((prevMessages) => {
+        const updatedMessages = [...prevMessages, newMsg];
+        setMessagesForGroup(currentGroup.id, updatedMessages);
+        localStorage.setItem(`chat_${currentGroup.id}`, JSON.stringify(updatedMessages));
+        return updatedMessages;
       });
-    } else {
-      setTypingUsers((prev) => new Set(prev).add("You"));
+    };
 
-      const timeout = setTimeout(() => {
-        setTypingUsers((prev) => {
-          const updated = new Set(prev);
-          updated.delete("You");
-          return updated;
-        });
-      }, 2000);
+    const randomMsgInterval = setInterval(sendRandomMessage, RANDOM_MESSAGE_INTERVAL);
 
-      return () => clearTimeout(timeout);
-    }
-  }, [newMessage, currentGroup]);
+    return () => clearInterval(randomMsgInterval);
+  }, [currentGroup, groups, setMessagesForGroup]);
 
-  if (!currentGroup) return null; // Ensure component does not break if group is not set
+  // Auto-scroll to the latest message
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [groupMessages]);
 
-  const handleSendMessage = () => {
+  const sendMessage = () => {
     if (newMessage.trim()) {
-      sendMessage(currentGroup.id, newMessage);
+      const newMsg = {
+        id: Date.now(),
+        text: newMessage,
+        sender: username,
+        timestamp: new Date().toLocaleTimeString()
+      };
+
+      setGroupMessages((prevMessages) => {
+        const updatedMessages = [...prevMessages, newMsg];
+        setMessagesForGroup(currentGroup.id, updatedMessages);
+        localStorage.setItem(`chat_${currentGroup.id}`, JSON.stringify(updatedMessages));
+        return updatedMessages;
+      });
+
       setNewMessage("");
     }
   };
 
+  if (!currentGroup) {
+    return (
+      <Container maxWidth="sm">
+        <Paper style={{ padding: 16 }}>
+          <Typography variant="h6">Please select a group to join.</Typography>
+        </Paper>
+      </Container>
+    );
+  }
+
   return (
     <Container maxWidth="sm">
-      <Typography variant="h5" gutterBottom>{currentGroup.name}</Typography>
-      <Paper style={{ padding: 16, maxHeight: 400, overflowY: "auto", display: "flex", flexDirection: "column" }}>
-        {(messages[currentGroup.id] || []).map((msg) => (
+      {/* Chatroom Header with Group Name & Back Button */}
+      <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
+        <Typography variant="h5">{currentGroup.name}</Typography>
+        <Button
+          variant="outlined"
+          color="secondary"
+          onClick={() => navigate("/")}
+        >
+          ← Back to Groups
+        </Button>
+      </Box>
+
+      <Paper
+        style={{
+          padding: 16,
+          height: 400,
+          overflowY: "auto",
+          display: "flex",
+          flexDirection: "column"
+        }}
+      >
+        {groupMessages.map((msg) => (
           <Box
             key={msg.id}
             style={{
               margin: "8px 0",
               padding: "8px 12px",
               borderRadius: "8px",
-              backgroundColor: msg.sender === "You" ? "#DCF8C6" : "#EAEAEA",
-              alignSelf: msg.sender === "You" ? "flex-end" : "flex-start",
+              backgroundColor: msg.sender === username ? "#DCF8C6" : "#EAEAEA",
+              alignSelf: msg.sender === username ? "flex-end" : "flex-start"
             }}
           >
             <Typography variant="body2" color="textSecondary">
@@ -98,13 +153,7 @@ const ChatRoom = () => {
             <Typography>{msg.text}</Typography>
           </Box>
         ))}
-
-        {/* Typing Indicator */}
-        {typingUsers.size > 0 && (
-          <Box style={{ padding: "8px", fontStyle: "italic", color: "#666" }}>
-            {Array.from(typingUsers).join(", ")} is typing...
-          </Box>
-        )}
+        <div ref={messagesEndRef} />
       </Paper>
 
       <TextField
@@ -115,26 +164,9 @@ const ChatRoom = () => {
         onChange={(e) => setNewMessage(e.target.value)}
         style={{ marginTop: 16 }}
       />
-      <Button variant="contained" color="primary" onClick={handleSendMessage} style={{ marginTop: 8, marginRight: 8 }}>
+      <Button variant="contained" color="primary" onClick={sendMessage} style={{ marginTop: 8 }}>
         Send
       </Button>
-      <Button variant="outlined" color="secondary" onClick={() => setUserDialogOpen(true)} style={{ marginTop: 8 }}>
-        View Users
-      </Button>
-
-      {/* User List Dialog */}
-      <Dialog open={userDialogOpen} onClose={() => setUserDialogOpen(false)}>
-        <DialogTitle>Users in {currentGroup.name}</DialogTitle>
-        <DialogContent>
-          <List>
-            {currentGroup.users.map((user) => (
-              <ListItem key={user.id}>
-                <ListItemText primary={user.name} />
-              </ListItem>
-            ))}
-          </List>
-        </DialogContent>
-      </Dialog>
     </Container>
   );
 };

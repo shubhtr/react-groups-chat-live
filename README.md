@@ -33,6 +33,7 @@ https://react-groups-chat-live.vercel.app/
     * Users can send and view messages in real-time.
     * Show a typing indicator when a user is typing.
     * Allow users to see the number of participants in a group.
+    * Real-time updates - Uses a simulated real-time solution (polling) to update messages dynamically.
 
 3. Mock Data Integration
     * User data (e.g., names, group memberships)
@@ -41,4 +42,7 @@ https://react-groups-chat-live.vercel.app/
 
 4. Responsive Design
     * Application works seamlessly on desktops, tablets and mobile devices
+
+5. Error Handling
+    * Handles edge cases such as no internet connection or empty message inputs gracefully.
 
