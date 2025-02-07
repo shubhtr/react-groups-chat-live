@@ -7,19 +7,54 @@ This repository contains the frontend application for a Live Chat Messaging Syst
 
 https://react-groups-chat-live.vercel.app/
 
-## Technologies
+## Instructions to setup and run the project locally
 
-1. Frontend
-    * ReactJS
+1. Clone the repository:
 
-2. Styling
-    * Material UI
+    > git clone https://github.com/shubhtr/react-groups-chat-live
 
-3. Mock APIs
-    * MirageJS
+2. Navigate to the directory
 
-4. Hosting
-    * Vercel
+    > cd react-groups-chat-live
+
+2. Install packages
+
+    > npm i
+
+3. Run the project
+
+    > npm run start
+
+## Architecture and Design Decisions
+
+1. State Management ---> React Context API
+    * <ins>chatContext.js</ins> provides global state for messages, groups, and users.
+    * <ins>useChat()</ins> hook allows access to chat data in any component.
+
+2. Routing and Navigation ---> React Router
+    * <ins>/</ins> ---> Group List
+    * <ins>/chat</ins> ---> Chat Room
+
+3. UI Libary ---> Material UI (MUI)
+    * <ins>Typography</ins> for text formatting.
+    * <ins>Paper</ins> for card-like chat windows.
+    * <ins>List</ins> & <ins>ListItem</ins> for groups and messages.
+    * <ins>Dialog</ins> for viewing group users.
+
+4. Backend Simulation → MirageJS
+    * Fake user data, group memberships, and chat history.
+    * Intercepts API calls and returns mock data.
+
+5. Data Persistence → LocalStorage
+    * Keeps chat history even after page refresh.
+    * Lightweight, no backend required.
+    * Messages are stored per group in localStorage (chat_{groupId}).
+    * Retrieved when switching between groups.
+
+6. Simulated Real-Time Updates → Polling (setInterval)
+    * Simulates new messages from random users.
+    * setInterval() polls messages every few seconds.
+    * Generates random messages at intervals for simulation.
 
 
 ## Features
@@ -46,3 +81,17 @@ https://react-groups-chat-live.vercel.app/
 5. Error Handling
     * Handles edge cases such as no internet connection or empty message inputs gracefully.
 
+
+## Technologies
+
+1. Frontend
+    * ReactJS
+
+2. Styling
+    * Material UI
+
+3. Mock APIs
+    * MirageJS
+
+4. Hosting
+    * Vercel

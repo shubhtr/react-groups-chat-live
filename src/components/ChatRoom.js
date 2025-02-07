@@ -84,23 +84,25 @@ const ChatRoom = () => {
   }, [groupMessages]);
 
   const sendMessage = () => {
-    if (newMessage.trim()) {
-      const newMsg = {
-        id: Date.now(),
-        text: newMessage,
-        sender: username,
-        timestamp: new Date().toLocaleTimeString()
-      };
-
-      setGroupMessages((prevMessages) => {
-        const updatedMessages = [...prevMessages, newMsg];
-        setMessagesForGroup(currentGroup.id, updatedMessages);
-        localStorage.setItem(`chat_${currentGroup.id}`, JSON.stringify(updatedMessages));
-        return updatedMessages;
-      });
-
-      setNewMessage("");
+    if (!newMessage.trim()) {
+      return; // Prevent sending empty messages
     }
+  
+    const newMsg = {
+      id: Date.now(),
+      text: newMessage.trim(), // Trim extra spaces
+      sender: username,
+      timestamp: new Date().toLocaleTimeString(),
+    };
+  
+    setGroupMessages((prevMessages) => {
+      const updatedMessages = [...prevMessages, newMsg];
+      setMessagesForGroup(currentGroup.id, updatedMessages);
+      localStorage.setItem(`chat_${currentGroup.id}`, JSON.stringify(updatedMessages));
+      return updatedMessages;
+    });
+  
+    setNewMessage(""); // Clear input field after sending
   };
 
   if (!currentGroup) {
