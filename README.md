@@ -10,16 +10,16 @@ https://react-groups-chat-live.vercel.app/
 ## Technologies
 
 1. Frontend
-    * React.js
+    * ReactJS
 
 2. Styling
     * Material UI
 
 3. Mock APIs
-
+    * MirageJS
 
 4. Hosting
-
+    * Vercel
 
 
 ## Features
@@ -27,7 +27,7 @@ https://react-groups-chat-live.vercel.app/
 1. Group Chat Interface
     * Users can view a list of groups and join any group.
     * A chat interface should display messages in a group with timestamps and sender names.
-    * Messages sent by the user should appear distinctly (e.g., aligned tot the right).
+    * Messages sent by the user should appear distinctly (e.g., aligned to the right).
 
 2. Messaging Features
     * Users can send and view messages in real-time.
